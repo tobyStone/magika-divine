@@ -174,7 +174,7 @@ const levelData = [
 ];
 
 function initLevel() {
-    // Extra Vertical Barrier Walls for separation
+    // Extra Vertical Barrier Walls (Castle to Peaks separation)
     for (let r = 0; r < mapRows; r++) {
         levelData[r][124] = 1;
         levelData[r][140] = 1;
@@ -381,6 +381,30 @@ function updateProjectiles() {
             const dx = (player.x + player.width/2) - (enemy.x + enemy.width/2);
             enemy.vx = (dx > 0) ? 1.2 : -1.2;
             enemy.x += enemy.vx;
+        }
+
+        // Enemy Tile Collision (Horizontal)
+        if (enemy.type !== 'bird_wizard') { // Boss has custom movement
+            let eRect = { x: enemy.x, y: enemy.y, width: enemy.width, height: enemy.height };
+            let startCol = Math.max(0, Math.floor(enemy.x / TILE_SIZE) - 1);
+            let endCol = Math.min(mapCols, Math.ceil((enemy.x + enemy.width) / TILE_SIZE) + 1);
+            
+            for (let r = 0; r < mapRows; r++) {
+                for (let c = startCol; c < endCol; c++) {
+                    if (levelData[r][c] === 1) {
+                        let tileRect = { x: c * TILE_SIZE, y: r * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE };
+                        if (checkCollision(eRect, tileRect)) {
+                            if (enemy.vx > 0) {
+                                enemy.x = tileRect.x - enemy.width;
+                            } else if (enemy.vx < 0) {
+                                enemy.x = tileRect.x + tileRect.width;
+                            }
+                            enemy.vx = 0;
+                            eRect.x = enemy.x;
+                        }
+                    }
+                }
+            }
         }
     });
 
