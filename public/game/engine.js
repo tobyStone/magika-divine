@@ -39,13 +39,15 @@ const assets = {
     bg: new Image(),
     tile: new Image(),
     player: new Image(),
-    enemy: new Image()
+    enemy: new Image(),
+    heart: new Image()
 };
 
 assets.bg.src = 'assets/bg.png';
 assets.tile.src = 'assets/tile.png';
 assets.player.src = 'assets/player.png';
 assets.enemy.src = 'assets/enemy.png';
+assets.heart.src = 'assets/heart.png';
 
 let assetsLoaded = 0;
 const totalAssets = Object.keys(assets).length;
@@ -93,6 +95,8 @@ const enemy = {
 
 const enemyProjectiles = [];
 const ENEMY_ATTACK_COOLDOWN = 1500; // 1.5 seconds
+
+const drops = [];
 
 // Level Map (1 = solid tile)
 const mapCols = 30; // 30 * 64 = 1920 map width
@@ -172,6 +176,15 @@ function updateProjectiles() {
                 p.active = false;
                 if (enemy.health <= 0) {
                     enemy.active = false;
+                    // Spawn Heart Drop
+                    drops.push({
+                        x: enemy.x + enemy.width/2 - 25,
+                        y: enemy.y + enemy.height/2 - 25,
+                        width: 50,
+                        height: 50,
+                        type: 'heart',
+                        active: true
+                    });
                 }
             }
         }
@@ -239,6 +252,24 @@ function updateProjectiles() {
     // Clean up enemy projectiles
     for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
         if (!enemyProjectiles[i].active) enemyProjectiles.splice(i, 1);
+    }
+
+    // --- Drops Logic ---
+    for (let d of drops) {
+        if (!d.active) continue;
+        
+        // Player collection
+        if (checkCollision(d, player)) {
+            if (d.type === 'heart') {
+                player.health = 5; // Full Restore
+            }
+            d.active = false;
+        }
+    }
+    
+    // Clean up drops
+    for (let i = drops.length - 1; i >= 0; i--) {
+        if (!drops[i].active) drops.splice(i, 1);
     }
 }
 
@@ -449,6 +480,23 @@ function draw() {
         ctx.drawImage(assets.enemy, -enemy.width/2, -enemy.height/2, enemy.width, enemy.height);
         ctx.restore();
     }
+
+    // 3c. Draw Drops (with pulse)
+    drops.forEach(d => {
+        if (d.type === 'heart') {
+            ctx.save();
+            const pulse = 1 + Math.sin(Date.now() / 200) * 0.15;
+            const drawW = d.width * pulse;
+            const drawH = d.height * pulse;
+            ctx.translate(d.x + d.width/2, d.y + d.height/2);
+            
+            ctx.globalCompositeOperation = 'screen';
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = '#ff3366';
+            ctx.drawImage(assets.heart, -drawW/2, -drawH/2, drawW, drawH);
+            ctx.restore();
+        }
+    });
 
     // 4. Draw Particles (Spores)
     ctx.fillStyle = 'rgba(200, 255, 200, 0.5)';
