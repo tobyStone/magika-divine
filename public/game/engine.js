@@ -243,15 +243,50 @@ function updateProjectiles() {
                     });
                 }
             }
-        } else if (enemy.type === 'zombie') {
+        } else if (enemy.type === 'bird_wizard') {
             const dx = (player.x + player.width/2) - (enemy.x + enemy.width/2);
-            const dist = Math.abs(dx);
-            if (dist < 800) { // Aggro range
-                enemy.vx = dx > 0 ? 2.5 : -2.5;
+            const dy = (player.y + player.height/2) - (enemy.y + enemy.height/2);
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            // Bird Boss AI State Machine
+            if (!enemy.state) { enemy.state = 'idle'; enemy.stateTimer = 60; }
+            enemy.stateTimer--;
+
+            if (enemy.stateTimer <= 0) {
+                // Pick a new state
+                const rand = Math.random();
+                if (rand < 0.4) {
+                    enemy.state = 'shoot';
+                    enemy.stateTimer = 40;
+                } else if (rand < 0.7) {
+                    enemy.state = 'rush';
+                    enemy.stateTimer = 60;
+                    enemy.rushDir = dx > 0 ? 1 : -1;
+                } else {
+                    enemy.state = 'teleport';
+                    enemy.stateTimer = 30;
+                }
+            }
+
+            if (enemy.state === 'shoot') {
+                if (Date.now() - enemy.lastAttackTime > 800) {
+                    enemy.lastAttackTime = Date.now();
+                    enemyProjectiles.push({
+                        x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2,
+                        vx: (dx / dist) * 7, vy: (dy / dist) * 7,
+                        size: 10, active: true, color: '#ff00ff'
+                    });
+                }
+            } else if (enemy.state === 'rush') {
+                enemy.vx = enemy.rushDir * 12;
                 enemy.x += enemy.vx;
-                
-                // Keep zombie within Room 2 or on floor
-                if (enemy.x < 1920) enemy.x = 1920; 
+                // Boundary check (Stay in arena: 101-125)
+                if (enemy.x < 101 * TILE_SIZE) enemy.x = 101 * TILE_SIZE;
+                if (enemy.x > 124 * TILE_SIZE) enemy.x = 124 * TILE_SIZE;
+            } else if (enemy.state === 'teleport' && enemy.stateTimer === 15) {
+                // Execute blink halfway through the state
+                enemy.x = (102 + Math.random() * 18) * TILE_SIZE;
+                enemy.y = (3 + Math.random() * 6) * TILE_SIZE;
             }
         }
     });
@@ -490,6 +525,12 @@ function initLevel() {
         type: 'stone', active: true
     });
 
+    // Spawn Bird Wizard Boss
+    enemies.push({
+        x: 115 * TILE_SIZE, y: 5 * TILE_SIZE, width: 100, height: 120, health: 15, maxHealth: 15,
+        lastAttackTime: 0, lastTeleportTime: 0, isHit: false, hitTimer: 0, active: true, type: 'bird_wizard'
+    });
+
     for (let i = 0; i < 150; i++) {
         particles.push({
             x: Math.random() * (mapCols * TILE_SIZE),
@@ -570,8 +611,22 @@ function draw() {
     for (let i = 0; i < 5; i++) {
         ctx.drawImage(assets.bird, (105 + i * 4) * TILE_SIZE, 3 * TILE_SIZE, 128, 160);
     }
-    // Locked Gate at the end
-    ctx.drawImage(assets.gate, 121 * TILE_SIZE, 11 * TILE_SIZE - 256, 192, 256);
+    // Locked Gate at the end (Unlocks if Boss is defeated)
+    const bossActive = enemies.some(e => e.type === 'bird_wizard');
+    if (bossActive) {
+        ctx.drawImage(assets.gate, 121 * TILE_SIZE, 11 * TILE_SIZE - 256, 192, 256);
+    } else {
+        // Draw open/unlocked gate state
+        ctx.save();
+        ctx.globalAlpha = 0.4;
+        ctx.drawImage(assets.gate, 121 * TILE_SIZE, 11 * TILE_SIZE - 256, 192, 256);
+        ctx.restore();
+        // Clear collision at gate
+        const gateCol = 121;
+        for(let r=8; r<=10; r++) {
+            if(levelData[r] && levelData[r][gateCol]) levelData[r][gateCol] = 0;
+        }
+    }
 
     interactiveObjects.forEach(obj => {
         if (obj.type === 'crystal') {
@@ -627,6 +682,10 @@ function draw() {
             targetImg = assets.zombie;
             // Face player logic
             if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
+        } else if (e.type === 'bird_wizard') {
+            targetImg = assets.bird; // Use bird painting sprite as placeholder
+            if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
+            ctx.filter = 'hue-rotate(270deg) brightness(1.2)'; // Purple tint
         } else {
             if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
         }
@@ -638,10 +697,23 @@ function draw() {
             ctx.filter = 'brightness(5) saturate(0)';
         } else {
             ctx.shadowBlur = 20;
-            ctx.shadowColor = (e.type === 'spellcaster') ? '#ff00ff' : '#00ff66';
+            ctx.shadowColor = (e.type === 'spellcaster' || e.type === 'bird_wizard') ? '#ff00ff' : '#00ff66';
         }
         
         ctx.drawImage(targetImg, -e.width/2, -e.height/2, e.width, e.height);
+
+        // Draw Wizard Hat procedurally for bird
+        if (e.type === 'bird_wizard') {
+            ctx.fillStyle = '#4B0082'; // Indigo
+            ctx.beginPath();
+            ctx.moveTo(-30, -e.height/2);
+            ctx.lineTo(30, -e.height/2);
+            ctx.lineTo(0, -e.height/2 - 60);
+            ctx.fill();
+            // Brim
+            ctx.fillRect(-45, -e.height/2, 90, 10);
+        }
+
         ctx.restore();
     });
 
@@ -728,14 +800,23 @@ function draw() {
     ctx.shadowBlur = 0;
 
     // Boss Health Bar (if active)
-    const boss = enemies.find(e => e.type === 'spellcaster');
+    const boss = enemies.find(e => e.type === 'spellcaster' || e.type === 'bird_wizard');
     if (boss) {
+        const isBossWizard = boss.type === 'bird_wizard';
+        const barWidth = isBossWizard ? 400 : 200;
+        const healthMax = isBossWizard ? 15 : 4;
+        const color = isBossWizard ? '#00ffff' : '#ff00ff';
+        
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(canvas.width/2 - 100, 30, 200, 15);
-        ctx.fillStyle = '#ff00ff';
-        ctx.fillRect(canvas.width/2 - 100, 30, (boss.health / 4) * 200, 15);
+        ctx.fillRect(canvas.width/2 - barWidth/2, 30, barWidth, 15);
+        ctx.fillStyle = color;
+        ctx.fillRect(canvas.width/2 - barWidth/2, 30, (boss.health / healthMax) * barWidth, 15);
         ctx.strokeStyle = '#fff';
-        ctx.strokeRect(canvas.width/2 - 100, 30, 200, 15);
+        ctx.strokeRect(canvas.width/2 - barWidth/2, 30, barWidth, 15);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 18px serif';
+        ctx.fillText(isBossWizard ? "THE BIRD WIZARD" : "DUNGEON KEEPER", canvas.width/2 - 60, 25);
     }
 
     // Debug Text
