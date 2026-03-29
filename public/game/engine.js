@@ -238,7 +238,7 @@ function updateProjectiles() {
                 if (dist < 800) {
                     enemyProjectiles.push({
                         x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2,
-                        vx: (dx / dist) * 5, vy: (dy / dist) * 5,
+                        vx: (dx / dist) * 3, vy: (dy / dist) * 3,
                         size: 8, active: true
                     });
                 }
@@ -269,11 +269,11 @@ function updateProjectiles() {
             }
 
             if (enemy.state === 'shoot') {
-                if (Date.now() - enemy.lastAttackTime > 800) {
+                if (Date.now() - enemy.lastAttackTime > 1200) {
                     enemy.lastAttackTime = Date.now();
                     enemyProjectiles.push({
                         x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2,
-                        vx: (dx / dist) * 7, vy: (dy / dist) * 7,
+                        vx: (dx / dist) * 3.5, vy: (dy / dist) * 3.5,
                         size: 10, active: true, color: '#ff00ff'
                     });
                 }
@@ -497,7 +497,7 @@ const particles = [];
 function initLevel() {
     // Spawn Boss
     enemies.push({
-        x: 704, y: 240, width: 80, height: 100, health: 4,
+        x: 704, y: 240, width: 80, height: 100, health: 4, maxHealth: 4,
         lastAttackTime: 0, isHit: false, hitTimer: 0, active: true, type: 'spellcaster'
     });
 
@@ -754,9 +754,9 @@ function draw() {
         ctx.shadowBlur = 0;
     });
 
-    ctx.restore();
-
     // Draw magic projectiles (Player - Cyan)
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
     projectiles.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -765,7 +765,6 @@ function draw() {
         ctx.shadowBlur = 15;
         ctx.shadowColor = '#00ffff'; 
         ctx.fill();
-        ctx.shadowBlur = 0;
     });
 
     // Draw magic projectiles (Enemy - Red/Purple)
@@ -774,14 +773,12 @@ function draw() {
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = '#fff';
         ctx.fill();
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#ff0033'; 
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = p.color || '#ff0033'; 
         ctx.fill();
-        ctx.shadowBlur = 0;
     });
-
-    // --- UI (Stay fixed on screen) ---
-    ctx.restore(); // Exit camera translate for UI
+    ctx.restore(); // Matching the Projectile save() at 759
+    ctx.restore(); // Matching the Camera save() at 571
     
     // Health UI
     for (let i = 0; i < 5; i++) {
@@ -800,23 +797,26 @@ function draw() {
     ctx.shadowBlur = 0;
 
     // Boss Health Bar (if active)
-    const boss = enemies.find(e => e.type === 'spellcaster' || e.type === 'bird_wizard');
+    const boss = enemies.find(e => (e.type === 'spellcaster' || e.type === 'bird_wizard') && Math.abs(e.x - player.x) < 1000);
     if (boss) {
         const isBossWizard = boss.type === 'bird_wizard';
-        const barWidth = isBossWizard ? 400 : 200;
-        const healthMax = isBossWizard ? 15 : 4;
-        const color = isBossWizard ? '#00ffff' : '#ff00ff';
+        const barWidth = isBossWizard ? 400 : 300;
+        const healthMax = boss.maxHealth || (isBossWizard ? 15 : 4);
+        const color = isBossWizard ? '#00ffff' : '#ff3300';
         
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(canvas.width/2 - barWidth/2, 30, barWidth, 15);
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(canvas.width/2 - barWidth/2, 30, barWidth, 20);
         ctx.fillStyle = color;
-        ctx.fillRect(canvas.width/2 - barWidth/2, 30, (boss.health / healthMax) * barWidth, 15);
+        ctx.fillRect(canvas.width/2 - barWidth/2, 30, (boss.health / healthMax) * barWidth, 20);
         ctx.strokeStyle = '#fff';
-        ctx.strokeRect(canvas.width/2 - barWidth/2, 30, barWidth, 15);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width/2 - barWidth/2, 30, barWidth, 20);
         
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 18px serif';
-        ctx.fillText(isBossWizard ? "THE BIRD WIZARD" : "DUNGEON KEEPER", canvas.width/2 - 60, 25);
+        ctx.font = 'bold 20px serif';
+        const name = isBossWizard ? "THE BIRD WIZARD" : "ANCIENT KEEPER";
+        ctx.fillText(name, canvas.width/2 - ctx.measureText(name).width/2, 22);
+        ctx.shadowBlur = 0;
     }
 
     // Debug Text
