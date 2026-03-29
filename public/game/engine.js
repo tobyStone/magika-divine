@@ -163,7 +163,9 @@ function updateProjectiles() {
     if (enemy.active) {
         // Enemy hit detection
         for (let p of projectiles) {
-            if (p.active && checkCollision(p, enemy)) {
+            // Projectiles use 'size' as a radius/diameter, so we pass a bounding box
+            const pRect = { x: p.x - p.size, y: p.y - p.size, width: p.size * 2, height: p.size * 2 };
+            if (p.active && checkCollision(pRect, enemy)) {
                 enemy.health--;
                 enemy.isHit = true;
                 enemy.hitTimer = 10; // flash for 10 frames
