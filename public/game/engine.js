@@ -96,7 +96,9 @@ const player = {
     checkpointX: 100,
     checkpointY: 100,
     saveText: "",
-    saveTextTimer: 0
+    saveTextTimer: 0,
+    extraHealth: 0,
+    hatCollected: false
 };
 
 function saveGame() {
@@ -105,7 +107,9 @@ function saveGame() {
         y: player.y,
         health: player.health,
         checkpointX: player.checkpointX,
-        checkpointY: player.checkpointY
+        checkpointY: player.checkpointY,
+        extraHealth: player.extraHealth,
+        hatCollected: player.hatCollected
     };
     localStorage.setItem('magika_divine_save', JSON.stringify(saveData));
     player.saveText = "COMMUNED";
@@ -121,6 +125,8 @@ function loadGame() {
         player.health = data.health;
         player.checkpointX = data.checkpointX;
         player.checkpointY = data.checkpointY;
+        player.extraHealth = data.extraHealth || 0;
+        player.hatCollected = data.hatCollected || false;
     }
 }
 
@@ -220,11 +226,16 @@ function updateProjectiles() {
 
         // --- Player-Enemy Contact Damage ---
         if (!player.invincible && checkCollision(player, enemy)) {
-            player.health--;
+            if (player.extraHealth > 0) {
+                player.extraHealth--;
+            } else {
+                player.health--;
+            }
             player.invincible = true;
             player.invincibleTimer = 60;
             if (player.health <= 0) {
-                player.x = 100; player.y = 100; player.vy = 0; player.health = 5;
+                player.x = player.checkpointX; player.y = player.checkpointY; player.vy = 0; player.health = 5;
+                player.extraHealth = 0; // Reset shield on death
             }
         }
 
@@ -301,18 +312,23 @@ function updateProjectiles() {
         ep.y += ep.vy;
 
         // Hit player detection
-        if (!player.invincible && checkCollision({x: ep.x - ep.size, y: ep.y - ep.size, width: ep.size*2, height: ep.size*2}, player)) {
-            player.health--;
+        if (!player.invincible && checkCollision(player, ep)) {
+            if (player.extraHealth > 0) {
+                player.extraHealth--;
+            } else {
+                player.health--;
+            }
             player.invincible = true;
-            player.invincibleTimer = 60; // 1 second invincibility
+            player.invincibleTimer = 60;
             ep.active = false;
             
             if (player.health <= 0) {
                 // Respawn
-                player.x = 100;
-                player.y = 100;
+                player.x = player.checkpointX;
+                player.y = player.checkpointY;
                 player.vy = 0;
                 player.health = 5;
+                player.extraHealth = 0;
             }
         }
 
@@ -443,7 +459,11 @@ function updatePhysics() {
                 let tileRect = { x: c * TILE_SIZE, y: r * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE };
                 if (checkCollision(pRect, tileRect)) {
                     if (!player.invincible) {
-                        player.health--;
+                        if (player.extraHealth > 0) {
+                            player.extraHealth--;
+                        } else {
+                            player.health--;
+                        }
                         player.invincible = true;
                         player.invincibleTimer = 60;
                         if (player.health <= 0) {
@@ -451,6 +471,7 @@ function updatePhysics() {
                             player.y = player.checkpointY;
                             player.vy = 0;
                             player.health = 5;
+                            player.extraHealth = 0;
                         }
                     }
                 }
@@ -468,6 +489,13 @@ function updatePhysics() {
                 player.x = 101 * TILE_SIZE;
                 player.y = 10 * TILE_SIZE - player.height;
                 player.vx = 0; player.vy = 0;
+            } else if (obj.type === 'wizard_hat') {
+                player.extraHealth = 3;
+                player.hatCollected = true;
+                obj.active = false;
+                player.saveText = "HAT OBTAINED";
+                player.saveTextTimer = 180;
+                saveGame(); // Persist immediately
             }
         }
     }
@@ -524,6 +552,13 @@ function initLevel() {
         x: 89 * TILE_SIZE, y: 10 * TILE_SIZE - 64, width: 64, height: 64,
         type: 'stone', active: true
     });
+
+    if (!player.hatCollected) {
+        interactiveObjects.push({
+            x: 90.5 * TILE_SIZE, y: 10 * TILE_SIZE - 40, width: 40, height: 40,
+            type: 'wizard_hat', active: true
+        });
+    }
 
     // Spawn Bird Wizard Boss
     enemies.push({
@@ -641,6 +676,23 @@ function draw() {
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#ff00ff';
             ctx.drawImage(assets.stone, obj.x, obj.y, obj.width, obj.height);
+            ctx.restore();
+        } else if (obj.type === 'wizard_hat') {
+            ctx.save();
+            const hover = Math.sin(Date.now() / 400) * 10;
+            ctx.translate(obj.x + obj.width/2, obj.y + obj.height/2 + hover);
+            
+            // Draw procedural magic hat
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = '#4B0082'; // Indigo
+            ctx.beginPath();
+            ctx.moveTo(-20, 10);
+            ctx.lineTo(20, 10);
+            ctx.lineTo(0, -30);
+            ctx.fill();
+            ctx.fillRect(-30, 10, 60, 5); // Brim
+            
             ctx.restore();
         }
     });
@@ -783,7 +835,7 @@ function draw() {
     // Health UI
     for (let i = 0; i < 5; i++) {
         ctx.beginPath();
-        ctx.arc(40 + i * 35, 70, 10, 0, Math.PI * 2);
+        ctx.arc(43 + i * 35, 75, 10, 0, Math.PI * 2);
         if (i < player.health) {
             ctx.fillStyle = '#ff3366'; // Filled heart
             ctx.shadowBlur = 10;
@@ -793,6 +845,21 @@ function draw() {
             ctx.shadowBlur = 0;
         }
         ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // Extra Health UI (Wizard Hat Shield)
+    for (let i = 0; i < 3; i++) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(43 + i * 35, 45, 8, 0, Math.PI * 2);
+        if (i < player.extraHealth) {
+            ctx.fillStyle = '#00ffff'; // Cyan shield heart
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.fill();
+        } 
+        ctx.restore();
     }
     ctx.shadowBlur = 0;
 
