@@ -229,8 +229,10 @@ function updateProjectiles() {
                     if (enemy.type === 'bird_wizard') {
                         enemy.isDying = true;
                         enemy.deathTimer = 120; // 2 seconds of shaking
+                        enemyProjectiles.length = 0; // Clear all attacks immediately
                     } else {
                         enemy.active = false;
+                        if (enemy.type === 'spellcaster') enemyProjectiles.length = 0; // Clear Keeper attacks
                     }
                 }
             }
@@ -242,7 +244,7 @@ function updateProjectiles() {
         }
 
         // --- Player-Enemy Contact Damage ---
-        if (!player.invincible && checkCollision(player, enemy)) {
+        if (!player.invincible && !enemy.isDying && checkCollision(player, enemy)) {
             if (player.extraHealth > 0) {
                 player.extraHealth--;
             } else {
