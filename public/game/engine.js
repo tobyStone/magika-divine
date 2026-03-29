@@ -43,7 +43,11 @@ const assets = {
     heart: new Image(),
     zombie: new Image(),
     acid: new Image(),
-    podium: new Image()
+    podium: new Image(),
+    crystal: new Image(),
+    stone: new Image(),
+    bird: new Image(),
+    gate: new Image()
 };
 
 assets.bg.src = 'assets/bg.png';
@@ -54,6 +58,10 @@ assets.heart.src = 'assets/heart.png';
 assets.zombie.src = 'assets/zombie.png';
 assets.acid.src = 'assets/acid.png';
 assets.podium.src = 'assets/podium.png';
+assets.crystal.src = 'assets/crystal.png';
+assets.stone.src = 'assets/stone.png';
+assets.bird.src = 'assets/bird.png';
+assets.gate.src = 'assets/gate.png';
 
 let assetsLoaded = 0;
 const totalAssets = Object.keys(assets).length;
@@ -63,6 +71,7 @@ Object.values(assets).forEach(img => {
         assetsLoaded++;
         if (assetsLoaded === totalAssets) {
             initLevel();
+            loadGame(); // Try to load any existing save
             requestAnimationFrame(gameLoop);
         }
     };
@@ -85,8 +94,35 @@ const player = {
     invincible: false,
     invincibleTimer: 0,
     checkpointX: 100,
-    checkpointY: 100
+    checkpointY: 100,
+    saveText: "",
+    saveTextTimer: 0
 };
+
+function saveGame() {
+    const saveData = {
+        x: player.x,
+        y: player.y,
+        health: player.health,
+        checkpointX: player.checkpointX,
+        checkpointY: player.checkpointY
+    };
+    localStorage.setItem('magika_divine_save', JSON.stringify(saveData));
+    player.saveText = "COMMUNED";
+    player.saveTextTimer = 120; // 2 seconds
+}
+
+function loadGame() {
+    const saved = localStorage.getItem('magika_divine_save');
+    if (saved) {
+        const data = JSON.parse(saved);
+        player.x = data.x;
+        player.y = data.y;
+        player.health = data.health;
+        player.checkpointX = data.checkpointX;
+        player.checkpointY = data.checkpointY;
+    }
+}
 
 const enemyProjectiles = [];
 const ENEMY_ATTACK_COOLDOWN = 1500; // 1.5 seconds
@@ -95,22 +131,22 @@ let enemies = [];
 const drops = [];
 
 // Level Map (1 = solid tile, 2 = acid)
-const mapCols = 90; // 90 * 64 = 5760 map width
+const mapCols = 125; // 125 * 64 = 8000 map width
 const mapRows = 12; // 12 * 64 = 768 map height
 
 const levelData = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1],
-    [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,1],
+    [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1]
 ];
 
 // Physics / Collisions
@@ -387,6 +423,25 @@ function updatePhysics() {
         }
     }
 
+    // Interaction Objects Collision
+    for (let obj of interactiveObjects) {
+        if (checkCollision(player, obj)) {
+            if (obj.type === 'crystal' && player.saveTextTimer <= 0) {
+                saveGame();
+            } else if (obj.type === 'stone') {
+                // Teleport to Boss Arena Entrance (Column 101)
+                player.x = 101 * TILE_SIZE;
+                player.y = 10 * TILE_SIZE - player.height;
+                player.vx = 0; player.vy = 0;
+            }
+        }
+    }
+
+    // Save Text animation
+    if (player.saveTextTimer > 0) {
+        player.saveTextTimer--;
+    }
+
     // Player Invincibility timer
     if (player.invincible) {
         player.invincibleTimer--;
@@ -398,6 +453,9 @@ function updatePhysics() {
 
 // Camera tracking
 let camera = { x: 0, y: 0 };
+
+// Interaction Objects
+const interactiveObjects = [];
 
 // Particles (Spores)
 const particles = [];
@@ -420,6 +478,16 @@ function initLevel() {
     drops.push({
         x: 84 * TILE_SIZE, y: 5 * TILE_SIZE - 40, width: 64, height: 80,
         type: 'heart_on_podium', active: true
+    });
+
+    // Spawn Save Crystal & Stone
+    interactiveObjects.push({
+        x: 87 * TILE_SIZE, y: 10 * TILE_SIZE - 96, width: 80, height: 96,
+        type: 'crystal', active: true
+    });
+    interactiveObjects.push({
+        x: 89 * TILE_SIZE, y: 10 * TILE_SIZE - 64, width: 64, height: 64,
+        type: 'stone', active: true
     });
 
     for (let i = 0; i < 150; i++) {
@@ -593,6 +661,31 @@ function draw() {
         ctx.shadowBlur = 0;
     });
 
+    // 5. Draw Decorative Paintings & Interactive Objects
+    // Bird Paintings in Boss Arena (Room 4)
+    for (let i = 0; i < 5; i++) {
+        ctx.drawImage(assets.bird, (105 + i * 4) * TILE_SIZE, 3 * TILE_SIZE, 128, 160);
+    }
+    // Locked Gate at the end
+    ctx.drawImage(assets.gate, 121 * TILE_SIZE, 11 * TILE_SIZE - 256, 192, 256);
+
+    interactiveObjects.forEach(obj => {
+        if (obj.type === 'crystal') {
+            ctx.save();
+            const pulse = 1 + Math.sin(Date.now() / 300) * 0.1;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = '#00ffff';
+            ctx.drawImage(assets.crystal, obj.x - (obj.width * (pulse-1))/2, obj.y - (obj.height * (pulse-1))/2, obj.width * pulse, obj.height * pulse);
+            ctx.restore();
+        } else if (obj.type === 'stone') {
+            ctx.save();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ff00ff';
+            ctx.drawImage(assets.stone, obj.x, obj.y, obj.width, obj.height);
+            ctx.restore();
+        }
+    });
+
     ctx.restore();
 
     // Draw magic projectiles (Player - Cyan)
@@ -653,6 +746,16 @@ function draw() {
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '16px monospace';
     ctx.fillText(`Arrows Mv | Space/W Jump | A Attack`, 20, 30);
+
+    // Save Message
+    if (player.saveTextTimer > 0) {
+        ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 32px serif';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#fff';
+        ctx.fillText(player.saveText, canvas.width/2 - 80, 200);
+        ctx.shadowBlur = 0;
+    }
 }
 
 function gameLoop() {
