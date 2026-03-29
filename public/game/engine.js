@@ -9,7 +9,12 @@ const JUMP_FORCE = -16;
 const MOVE_SPEED = 6;
 
 // Set canvas size (16:9 aspect ratio)
-canvas.height = 720;
+function resize() {
+    canvas.width = 1280;
+    canvas.height = 720;
+}
+window.addEventListener('resize', resize);
+resize();
 
 // Cinematic State
 let introStatus = 'READY'; // READY, PLAYING, FINISHED
