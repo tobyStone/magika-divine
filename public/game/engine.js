@@ -41,7 +41,9 @@ const assets = {
     player: new Image(),
     enemy: new Image(),
     heart: new Image(),
-    zombie: new Image()
+    zombie: new Image(),
+    acid: new Image(),
+    podium: new Image()
 };
 
 assets.bg.src = 'assets/bg.png';
@@ -50,6 +52,8 @@ assets.player.src = 'assets/player.png';
 assets.enemy.src = 'assets/enemy.png';
 assets.heart.src = 'assets/heart.png';
 assets.zombie.src = 'assets/zombie.png';
+assets.acid.src = 'assets/acid.png';
+assets.podium.src = 'assets/podium.png';
 
 let assetsLoaded = 0;
 const totalAssets = Object.keys(assets).length;
@@ -79,7 +83,9 @@ const player = {
     hitTimer: 0,
     health: 5,
     invincible: false,
-    invincibleTimer: 0
+    invincibleTimer: 0,
+    checkpointX: 100,
+    checkpointY: 100
 };
 
 const enemyProjectiles = [];
@@ -88,23 +94,23 @@ const ENEMY_ATTACK_COOLDOWN = 1500; // 1.5 seconds
 let enemies = [];
 const drops = [];
 
-// Level Map (1 = solid tile)
-const mapCols = 60; // 60 * 64 = 3840 map width
+// Level Map (1 = solid tile, 2 = acid)
+const mapCols = 90; // 90 * 64 = 5760 map width
 const mapRows = 12; // 12 * 64 = 768 map height
 
 const levelData = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1],
+    [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 // Physics / Collisions
@@ -242,7 +248,7 @@ function updateProjectiles() {
         // Tile collision
         let c = Math.floor(ep.x / TILE_SIZE);
         let r = Math.floor(ep.y / TILE_SIZE);
-        if (r >= 0 && r < mapRows && c >= 0 && c < mapCols && levelData[r][c] === 1) {
+        if (r >= 0 && r < mapRows && c >= 0 && c < mapCols && (levelData[r][c] === 1 || levelData[r][c] === 2)) {
             ep.active = false;
         }
 
@@ -262,7 +268,7 @@ function updateProjectiles() {
         
         // Player collection
         if (checkCollision(d, player)) {
-            if (d.type === 'heart') {
+            if (d.type === 'heart' || d.type === 'heart_on_podium') {
                 player.health = 5; // Full Restore
             }
             d.active = false;
@@ -345,10 +351,40 @@ function updatePhysics() {
     if (player.x < 0) player.x = 0;
     if (player.x + player.width > mapCols * TILE_SIZE) player.x = mapCols * TILE_SIZE - player.width;
     if (player.y > mapRows * TILE_SIZE) {
-        player.x = 100;
-        player.y = 100;
+        player.x = player.checkpointX;
+        player.y = player.checkpointY;
         player.vy = 0;
         player.health = 5; // Reset on fall
+    }
+
+    // Checkpoint logic
+    if (player.x > 3840 && player.checkpointX === 100) {
+        player.checkpointX = 3900;
+        player.checkpointY = 100;
+    }
+
+    // Hazard Collision (Tile 2 = Acid)
+    pRect.y = player.y; // Refresh pRect
+    pRect.x = player.x;
+    for (let r = 0; r < mapRows; r++) {
+        for (let c = 0; c < mapCols; c++) {
+            if (levelData[r][c] === 2) {
+                let tileRect = { x: c * TILE_SIZE, y: r * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE };
+                if (checkCollision(pRect, tileRect)) {
+                    if (!player.invincible) {
+                        player.health--;
+                        player.invincible = true;
+                        player.invincibleTimer = 60;
+                        if (player.health <= 0) {
+                            player.x = player.checkpointX;
+                            player.y = player.checkpointY;
+                            player.vy = 0;
+                            player.health = 5;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // Player Invincibility timer
@@ -380,7 +416,13 @@ function initLevel() {
         });
     }
 
-    for (let i = 0; i < 100; i++) {
+    // Spawn Podium Reward in Room 4
+    drops.push({
+        x: 84 * TILE_SIZE, y: 5 * TILE_SIZE - 40, width: 64, height: 80,
+        type: 'heart_on_podium', active: true
+    });
+
+    for (let i = 0; i < 150; i++) {
         particles.push({
             x: Math.random() * (mapCols * TILE_SIZE),
             y: Math.random() * (mapRows * TILE_SIZE),
@@ -437,11 +479,20 @@ function draw() {
     for (let r = 0; r < mapRows; r++) {
         for (let c = 0; c < mapCols; c++) {
             if (levelData[r][c] === 1) {
-                ctx.drawImage(
-                    assets.tile,
-                    c * TILE_SIZE, r * TILE_SIZE,
-                    TILE_SIZE, TILE_SIZE
-                );
+                ctx.drawImage(assets.tile, c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            } else if (levelData[r][c] === 2) {
+                // Animate Acid
+                const acidOffset = (Date.now() / 20) % TILE_SIZE;
+                ctx.drawImage(assets.acid, c * TILE_SIZE - acidOffset, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                ctx.drawImage(assets.acid, c * TILE_SIZE - acidOffset + TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ff33';
+                ctx.fillStyle = 'rgba(0, 255, 50, 0.1)';
+                ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                ctx.restore();
             }
         }
     }
@@ -507,12 +558,19 @@ function draw() {
 
     // 3c. Draw Drops (with pulse)
     drops.forEach(d => {
-        if (d.type === 'heart') {
+        if (d.type === 'heart' || d.type === 'heart_on_podium') {
             ctx.save();
             const pulse = 1 + Math.sin(Date.now() / 200) * 0.15;
             const drawW = d.width * pulse;
             const drawH = d.height * pulse;
-            ctx.translate(d.x + d.width/2, d.y + d.height/2);
+            
+            if (d.type === 'heart_on_podium') {
+                // Draw podium under the heart
+                ctx.drawImage(assets.podium, d.x, d.y + 40, d.width, d.height);
+                ctx.translate(d.x + d.width/2, d.y + 20);
+            } else {
+                ctx.translate(d.x + d.width/2, d.y + d.height/2);
+            }
             
             ctx.globalCompositeOperation = 'screen';
             ctx.shadowBlur = 25;
