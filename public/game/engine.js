@@ -5,7 +5,7 @@ const ctx = canvas.getContext('2d');
 const TILE_SIZE = 64;
 const GRAVITY = 0.6;
 const MAX_FALL_SPEED = 14;
-const JUMP_FORCE = -12;
+const JUMP_FORCE = -16;
 const MOVE_SPEED = 6;
 
 // Set canvas size (16:9 aspect ratio)
@@ -16,19 +16,22 @@ canvas.height = 720;
 const keys = {
     ArrowLeft: false,
     ArrowRight: false,
-    Space: false
+    Space: false,
+    Attack: false
 };
 
 window.addEventListener('keydown', (e) => {
-    if (e.code === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.ArrowLeft = true;
-    if (e.code === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.ArrowRight = true;
-    if (e.code === 'Space' || e.key === 'w' || e.key === 'W') keys.Space = true;
+    if (e.code === 'ArrowLeft') keys.ArrowLeft = true;
+    if (e.code === 'ArrowRight') keys.ArrowRight = true;
+    if (e.code === 'Space' || e.key === 'w' || e.key === 'W' || e.code === 'ArrowUp') keys.Space = true;
+    if (e.key === 'a' || e.key === 'A') keys.Attack = true;
 });
 
 window.addEventListener('keyup', (e) => {
-    if (e.code === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.ArrowLeft = false;
-    if (e.code === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.ArrowRight = false;
-    if (e.code === 'Space' || e.key === 'w' || e.key === 'W') keys.Space = false;
+    if (e.code === 'ArrowLeft') keys.ArrowLeft = false;
+    if (e.code === 'ArrowRight') keys.ArrowRight = false;
+    if (e.code === 'Space' || e.key === 'w' || e.key === 'W' || e.code === 'ArrowUp') keys.Space = false;
+    if (e.key === 'a' || e.key === 'A') keys.Attack = false;
 });
 
 // Assets
@@ -64,7 +67,8 @@ const player = {
     vx: 0,
     vy: 0,
     isGrounded: false,
-    facingRight: true
+    facingRight: true,
+    lastAttackTime: 0
 };
 
 // Level Map (1 = solid tile)
@@ -94,6 +98,43 @@ function checkCollision(rect1, rect2) {
         rect1.y < rect2.y + rect2.height &&
         rect1.y + rect1.height > rect2.y
     );
+}
+
+const projectiles = [];
+const ATTACK_COOLDOWN = 300;
+
+function updateProjectiles() {
+    // Attack Input (check time for cooldown)
+    if (keys.Attack && Date.now() - player.lastAttackTime > ATTACK_COOLDOWN) {
+        player.lastAttackTime = Date.now();
+        projectiles.push({
+            x: player.facingRight ? player.x + player.width : player.x,
+            y: player.y + player.height / 2 - 10,
+            vx: player.facingRight ? 12 : -12,
+            size: 10,
+            active: true
+        });
+    }
+    
+    // Update existing
+    for (let p of projectiles) {
+        if (!p.active) continue;
+        p.x += p.vx;
+        
+        // Simple collision with tiles
+        let c = Math.floor(p.x / TILE_SIZE);
+        let r = Math.floor(p.y / TILE_SIZE);
+        if (r >= 0 && r < mapRows && c >= 0 && c < mapCols && levelData[r][c] === 1) {
+            p.active = false;
+        }
+        
+        if (p.x < -1000 || p.x > mapCols * TILE_SIZE + 1000) p.active = false;
+    }
+    
+    // Clean up
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        if (!projectiles[i].active) projectiles.splice(i, 1);
+    }
 }
 
 function updatePhysics() {
@@ -278,15 +319,28 @@ function draw() {
 
     ctx.restore();
 
+    // Draw magic projectiles
+    projectiles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#00ffff'; 
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    });
+
     // Debug Text
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '16px monospace';
-    ctx.fillText(`WASD to Move | Space to Jump`, 20, 30);
+    ctx.fillText(`Arrows Mv | Space/W Jump | A Attack`, 20, 30);
 }
 
 function gameLoop() {
     updatePhysics();
     updateParticles();
+    updateProjectiles();
     draw();
     requestAnimationFrame(gameLoop);
 }
