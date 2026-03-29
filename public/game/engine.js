@@ -38,12 +38,14 @@ window.addEventListener('keyup', (e) => {
 const assets = {
     bg: new Image(),
     tile: new Image(),
-    player: new Image()
+    player: new Image(),
+    enemy: new Image()
 };
 
 assets.bg.src = 'assets/bg.png';
 assets.tile.src = 'assets/tile.png';
 assets.player.src = 'assets/player.png';
+assets.enemy.src = 'assets/enemy.png';
 
 let assetsLoaded = 0;
 const totalAssets = Object.keys(assets).length;
@@ -68,8 +70,26 @@ const player = {
     vy: 0,
     isGrounded: false,
     facingRight: true,
-    lastAttackTime: 0
+    lastAttackTime: 0,
+    isHit: false,
+    hitTimer: 0
 };
+
+// Enemy object
+const enemy = {
+    x: 704,
+    y: 240,
+    width: 80,
+    height: 100,
+    health: 4,
+    lastAttackTime: 0,
+    isHit: false,
+    hitTimer: 0,
+    active: true
+};
+
+const enemyProjectiles = [];
+const ENEMY_ATTACK_COOLDOWN = 1500; // 1.5 seconds
 
 // Level Map (1 = solid tile)
 const mapCols = 30; // 30 * 64 = 1920 map width
@@ -134,6 +154,79 @@ function updateProjectiles() {
     // Clean up
     for (let i = projectiles.length - 1; i >= 0; i--) {
         if (!projectiles[i].active) projectiles.splice(i, 1);
+    }
+
+    // --- Enemy Logic ---
+    if (enemy.active) {
+        // Enemy hit detection
+        for (let p of projectiles) {
+            if (p.active && checkCollision(p, enemy)) {
+                enemy.health--;
+                enemy.isHit = true;
+                enemy.hitTimer = 10; // flash for 10 frames
+                p.active = false;
+                if (enemy.health <= 0) {
+                    enemy.active = false;
+                }
+            }
+        }
+
+        if (enemy.isHit) {
+            enemy.hitTimer--;
+            if (enemy.hitTimer <= 0) enemy.isHit = false;
+        }
+
+        // Enemy Attack (aim at player)
+        if (Date.now() - enemy.lastAttackTime > ENEMY_ATTACK_COOLDOWN) {
+            enemy.lastAttackTime = Date.now();
+            // Calculate direction to player
+            const dx = (player.x + player.width/2) - (enemy.x + enemy.width/2);
+            const dy = (player.y + player.height/2) - (enemy.y + enemy.height/2);
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < 800) { // Only fire if player is somewhat close
+                enemyProjectiles.push({
+                    x: enemy.x + enemy.width/2,
+                    y: enemy.y + enemy.height/2,
+                    vx: (dx / dist) * 5,
+                    vy: (dy / dist) * 5,
+                    size: 8,
+                    active: true
+                });
+            }
+        }
+    }
+
+    // Update enemy projectiles
+    for (let ep of enemyProjectiles) {
+        if (!ep.active) continue;
+        ep.x += ep.vx;
+        ep.y += ep.vy;
+
+        // Hit player detection
+        if (checkCollision({x: ep.x - ep.size, y: ep.y - ep.size, width: ep.size*2, height: ep.size*2}, player)) {
+            // Player hit: Respawn
+            player.x = 100;
+            player.y = 100;
+            player.vy = 0;
+            ep.active = false;
+        }
+
+        // Tile collision
+        let c = Math.floor(ep.x / TILE_SIZE);
+        let r = Math.floor(ep.y / TILE_SIZE);
+        if (r >= 0 && r < mapRows && c >= 0 && c < mapCols && levelData[r][c] === 1) {
+            ep.active = false;
+        }
+
+        if (ep.x < -100 || ep.x > mapCols * TILE_SIZE + 100 || ep.y < -100 || ep.y > mapRows * TILE_SIZE + 100) {
+            ep.active = false;
+        }
+    }
+
+    // Clean up enemy projectiles
+    for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+        if (!enemyProjectiles[i].active) enemyProjectiles.splice(i, 1);
     }
 }
 
@@ -295,14 +388,40 @@ function draw() {
          ctx.scale(-1, 1);
     }
     
-    // Set operation 'screen' so solid black background of sprite becomes transparent if there are lighter elements.
-    // Assuming the knight prompt "white glowing eyes, silhouette" gives strong contrast.
+    // Set operation 'screen' so solid black background of sprite becomes transparent.
     ctx.globalCompositeOperation = 'screen';
-    ctx.drawImage(assets.player, -player.width/2, -player.height/2, player.width, player.height);
     
-    // Reset composite operation
-    ctx.globalCompositeOperation = 'source-over';
+    // Add glow to player for extra visibility
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#00ffff';
+    ctx.drawImage(assets.player, -player.width/2, -player.height/2, player.width, player.height);
+    ctx.shadowBlur = 0;
+    
     ctx.restore();
+
+    // 3b. Draw Enemy
+    if (enemy.active) {
+        ctx.save();
+        ctx.translate(enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+        
+        // Face player
+        if (player.x + player.width/2 < enemy.x + enemy.width/2) {
+            ctx.scale(-1, 1);
+        }
+
+        ctx.globalCompositeOperation = 'screen';
+        
+        if (enemy.isHit) {
+            ctx.filter = 'brightness(5) saturate(0)'; // Flash white
+        } else {
+            // Dark purple glow for enemy
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ff00ff';
+        }
+        
+        ctx.drawImage(assets.enemy, -enemy.width/2, -enemy.height/2, enemy.width, enemy.height);
+        ctx.restore();
+    }
 
     // 4. Draw Particles (Spores)
     ctx.fillStyle = 'rgba(200, 255, 200, 0.5)';
@@ -319,7 +438,7 @@ function draw() {
 
     ctx.restore();
 
-    // Draw magic projectiles
+    // Draw magic projectiles (Player - Cyan)
     projectiles.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -327,6 +446,18 @@ function draw() {
         ctx.fill();
         ctx.shadowBlur = 15;
         ctx.shadowColor = '#00ffff'; 
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    });
+
+    // Draw magic projectiles (Enemy - Red/Purple)
+    enemyProjectiles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ff0033'; 
         ctx.fill();
         ctx.shadowBlur = 0;
     });
