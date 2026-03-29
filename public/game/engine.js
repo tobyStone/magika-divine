@@ -9,8 +9,12 @@ const JUMP_FORCE = -16;
 const MOVE_SPEED = 6;
 
 // Set canvas size (16:9 aspect ratio)
-canvas.width = 1280;
 canvas.height = 720;
+
+// Cinematic State
+let introStatus = 'READY'; // READY, PLAYING, FINISHED
+let introTimer = 0;
+let screenShake = 0;
 
 // Input handling
 const keys = {
@@ -209,12 +213,20 @@ function updateProjectiles() {
         for (let p of projectiles) {
             const pRect = { x: p.x - p.size, y: p.y - p.size, width: p.size * 2, height: p.size * 2 };
             if (p.active && checkCollision(pRect, enemy)) {
+                if (enemy.type === 'bird_wizard' && enemy.isDying) continue; // Immortal while dying
+
                 enemy.health--;
                 enemy.isHit = true;
                 enemy.hitTimer = 10;
                 p.active = false;
+                
                 if (enemy.health <= 0) {
-                    enemy.active = false;
+                    if (enemy.type === 'bird_wizard') {
+                        enemy.isDying = true;
+                        enemy.deathTimer = 120; // 2 seconds of shaking
+                    } else {
+                        enemy.active = false;
+                    }
                 }
             }
         }
@@ -302,6 +314,16 @@ function updateProjectiles() {
         }
     });
 
+    // Handle Dying Bosses
+    enemies.forEach(enemy => {
+        if (enemy.type === 'bird_wizard' && enemy.isDying) {
+            enemy.deathTimer--;
+            if (enemy.deathTimer <= 0) {
+                enemy.active = false;
+            }
+        }
+    });
+
     // Clean up dead enemies
     enemies = enemies.filter(e => e.active);
 
@@ -370,6 +392,29 @@ function updateProjectiles() {
 }
 
 function updatePhysics() {
+    // Intro Cutscene Trigger Logic
+    const galleryStartX = 100 * TILE_SIZE;
+    if (player.x > galleryStartX && introStatus === 'READY') {
+        introStatus = 'PLAYING';
+        introTimer = 90; // 1.5 seconds
+        player.vx = 0;
+        player.vy = 0;
+    } else if (player.x < galleryStartX - 100 && introStatus === 'FINISHED') {
+        introStatus = 'READY'; // Reset so it plays again when entering
+    }
+
+    if (introStatus === 'PLAYING') {
+        introTimer--;
+        screenShake = 15; // Constant intense shake during scream
+        if (introTimer <= 0) {
+            introStatus = 'FINISHED';
+            screenShake = 0;
+        }
+        return; // Lock movement
+    }
+
+    if (screenShake > 0) screenShake *= 0.9; // Fade out shake if any left
+
     // Horizontal Movement
     if (keys.ArrowLeft) {
         player.vx = -MOVE_SPEED;
@@ -606,6 +651,11 @@ function draw() {
 
     ctx.save();
     
+    // Apply Screen Shake
+    if (screenShake > 0) {
+        ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+    }
+    
     // 1. Draw Parallax Background
     const bgParallaxFactor = 0.5;
     let bgOffsetX = - (camera.x * bgParallaxFactor);
@@ -746,7 +796,11 @@ function draw() {
         // Standard composite mode for vibrant sprites
         ctx.globalCompositeOperation = 'source-over';
         
-        if (e.isHit) {
+        if (e.isDying) {
+            // Vibate side to side when dying
+            ctx.translate((Math.random() - 0.5) * 20, 0);
+            ctx.filter = 'brightness(2) contrast(2) grayscale(0.5)';
+        } else if (e.isHit) {
             ctx.filter = 'brightness(5) saturate(0)';
         } else {
             ctx.shadowBlur = 20;
@@ -891,6 +945,21 @@ function draw() {
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '16px monospace';
     ctx.fillText(`Arrows Mv | Space/W Jump | A Attack`, 20, 30);
+
+    // Intro Scream Text
+    if (introStatus === 'PLAYING') {
+        ctx.save();
+        ctx.fillStyle = '#ff0033';
+        ctx.font = 'bold 80px serif';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        const txt = "SCREEEEEE!";
+        const x = canvas.width/2 - ctx.measureText(txt).width/2;
+        const y = canvas.height/2;
+        ctx.fillText(txt, x, y);
+        ctx.strokeText(txt, x, y);
+        ctx.restore();
+    }
 
     // Save Message
     if (player.saveTextTimer > 0) {
