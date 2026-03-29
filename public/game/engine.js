@@ -614,10 +614,6 @@ function draw() {
         } else {
             ctx.shadowBlur = 20;
             ctx.shadowColor = (e.type === 'spellcaster') ? '#ff00ff' : '#00ff66';
-            // Optional: add a slight white outline effect for even more clarity
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(-e.width/2, -e.height/2, e.width, e.height);
         }
         
         ctx.drawImage(targetImg, -e.width/2, -e.height/2, e.width, e.height);
