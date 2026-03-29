@@ -72,7 +72,10 @@ const player = {
     facingRight: true,
     lastAttackTime: 0,
     isHit: false,
-    hitTimer: 0
+    hitTimer: 0,
+    health: 5,
+    invincible: false,
+    invincibleTimer: 0
 };
 
 // Enemy object
@@ -204,12 +207,19 @@ function updateProjectiles() {
         ep.y += ep.vy;
 
         // Hit player detection
-        if (checkCollision({x: ep.x - ep.size, y: ep.y - ep.size, width: ep.size*2, height: ep.size*2}, player)) {
-            // Player hit: Respawn
-            player.x = 100;
-            player.y = 100;
-            player.vy = 0;
+        if (!player.invincible && checkCollision({x: ep.x - ep.size, y: ep.y - ep.size, width: ep.size*2, height: ep.size*2}, player)) {
+            player.health--;
+            player.invincible = true;
+            player.invincibleTimer = 60; // 1 second invincibility
             ep.active = false;
+            
+            if (player.health <= 0) {
+                // Respawn
+                player.x = 100;
+                player.y = 100;
+                player.vy = 0;
+                player.health = 5;
+            }
         }
 
         // Tile collision
@@ -303,6 +313,15 @@ function updatePhysics() {
         player.x = 100;
         player.y = 100;
         player.vy = 0;
+        player.health = 5; // Reset on fall
+    }
+
+    // Player Invincibility timer
+    if (player.invincible) {
+        player.invincibleTimer--;
+        if (player.invincibleTimer <= 0) {
+            player.invincible = false;
+        }
     }
 }
 
@@ -388,6 +407,11 @@ function draw() {
          ctx.scale(-1, 1);
     }
     
+    // Ghostly effect when invincible
+    if (player.invincible && Math.floor(Date.now() / 100) % 2 === 0) {
+        ctx.globalAlpha = 0.3;
+    }
+
     // Set operation 'screen' so solid black background of sprite becomes transparent.
     ctx.globalCompositeOperation = 'screen';
     
@@ -397,6 +421,7 @@ function draw() {
     ctx.drawImage(assets.player, -player.width/2, -player.height/2, player.width, player.height);
     ctx.shadowBlur = 0;
     
+    ctx.globalAlpha = 1.0;
     ctx.restore();
 
     // 3b. Draw Enemy
@@ -461,6 +486,35 @@ function draw() {
         ctx.fill();
         ctx.shadowBlur = 0;
     });
+
+    // --- UI (Stay fixed on screen) ---
+    ctx.restore(); // Exit camera translate for UI
+    
+    // Health UI
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(40 + i * 35, 70, 10, 0, Math.PI * 2);
+        if (i < player.health) {
+            ctx.fillStyle = '#ff3366'; // Filled heart
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff3366';
+        } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; // Empty heart
+            ctx.shadowBlur = 0;
+        }
+        ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // Boss Health Bar (if active)
+    if (enemy.active) {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(canvas.width/2 - 100, 30, 200, 15);
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillRect(canvas.width/2 - 100, 30, (enemy.health / 4) * 200, 15);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(canvas.width/2 - 100, 30, 200, 15);
+    }
 
     // Debug Text
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
