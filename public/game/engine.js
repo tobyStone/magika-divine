@@ -40,7 +40,8 @@ const assets = {
     tile: new Image(),
     player: new Image(),
     enemy: new Image(),
-    heart: new Image()
+    heart: new Image(),
+    zombie: new Image()
 };
 
 assets.bg.src = 'assets/bg.png';
@@ -48,6 +49,7 @@ assets.tile.src = 'assets/tile.png';
 assets.player.src = 'assets/player.png';
 assets.enemy.src = 'assets/enemy.png';
 assets.heart.src = 'assets/heart.png';
+assets.zombie.src = 'assets/zombie.png';
 
 let assetsLoaded = 0;
 const totalAssets = Object.keys(assets).length;
@@ -80,41 +82,29 @@ const player = {
     invincibleTimer: 0
 };
 
-// Enemy object
-const enemy = {
-    x: 704,
-    y: 240,
-    width: 80,
-    height: 100,
-    health: 4,
-    lastAttackTime: 0,
-    isHit: false,
-    hitTimer: 0,
-    active: true
-};
-
 const enemyProjectiles = [];
 const ENEMY_ATTACK_COOLDOWN = 1500; // 1.5 seconds
 
+let enemies = [];
 const drops = [];
 
 // Level Map (1 = solid tile)
-const mapCols = 30; // 30 * 64 = 1920 map width
+const mapCols = 60; // 60 * 64 = 3840 map width
 const mapRows = 12; // 12 * 64 = 768 map height
 
 const levelData = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1],
-    [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 // Physics / Collisions
@@ -163,27 +153,23 @@ function updateProjectiles() {
         if (!projectiles[i].active) projectiles.splice(i, 1);
     }
 
-    // --- Enemy Logic ---
-    if (enemy.active) {
+    // --- Monster Mob Logic ---
+    enemies.forEach(enemy => {
+        if (!enemy.active) return;
+
         // Enemy hit detection
         for (let p of projectiles) {
-            // Projectiles use 'size' as a radius/diameter, so we pass a bounding box
             const pRect = { x: p.x - p.size, y: p.y - p.size, width: p.size * 2, height: p.size * 2 };
             if (p.active && checkCollision(pRect, enemy)) {
                 enemy.health--;
                 enemy.isHit = true;
-                enemy.hitTimer = 10; // flash for 10 frames
+                enemy.hitTimer = 10;
                 p.active = false;
                 if (enemy.health <= 0) {
                     enemy.active = false;
-                    // Spawn Heart Drop
                     drops.push({
-                        x: enemy.x + enemy.width/2 - 25,
-                        y: enemy.y + enemy.height/2 - 25,
-                        width: 50,
-                        height: 50,
-                        type: 'heart',
-                        active: true
+                        x: enemy.x + enemy.width/2 - 25, y: enemy.y + enemy.height/2 - 25,
+                        width: 50, height: 50, type: 'heart', active: true
                     });
                 }
             }
@@ -194,26 +180,46 @@ function updateProjectiles() {
             if (enemy.hitTimer <= 0) enemy.isHit = false;
         }
 
-        // Enemy Attack (aim at player)
-        if (Date.now() - enemy.lastAttackTime > ENEMY_ATTACK_COOLDOWN) {
-            enemy.lastAttackTime = Date.now();
-            // Calculate direction to player
-            const dx = (player.x + player.width/2) - (enemy.x + enemy.width/2);
-            const dy = (player.y + player.height/2) - (enemy.y + enemy.height/2);
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            
-            if (dist < 800) { // Only fire if player is somewhat close
-                enemyProjectiles.push({
-                    x: enemy.x + enemy.width/2,
-                    y: enemy.y + enemy.height/2,
-                    vx: (dx / dist) * 5,
-                    vy: (dy / dist) * 5,
-                    size: 8,
-                    active: true
-                });
+        // --- Player-Enemy Contact Damage ---
+        if (!player.invincible && checkCollision(player, enemy)) {
+            player.health--;
+            player.invincible = true;
+            player.invincibleTimer = 60;
+            if (player.health <= 0) {
+                player.x = 100; player.y = 100; player.vy = 0; player.health = 5;
             }
         }
-    }
+
+        // --- AI Patterns ---
+        if (enemy.type === 'spellcaster') {
+            if (Date.now() - enemy.lastAttackTime > ENEMY_ATTACK_COOLDOWN) {
+                enemy.lastAttackTime = Date.now();
+                const dx = (player.x + player.width/2) - (enemy.x + enemy.width/2);
+                const dy = (player.y + player.height/2) - (enemy.y + enemy.height/2);
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 800) {
+                    enemyProjectiles.push({
+                        x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2,
+                        vx: (dx / dist) * 5, vy: (dy / dist) * 5,
+                        size: 8, active: true
+                    });
+                }
+            }
+        } else if (enemy.type === 'zombie') {
+            const dx = (player.x + player.width/2) - (enemy.x + enemy.width/2);
+            const dist = Math.abs(dx);
+            if (dist < 800) { // Aggro range
+                enemy.vx = dx > 0 ? 2.5 : -2.5;
+                enemy.x += enemy.vx;
+                
+                // Keep zombie within Room 2 or on floor
+                if (enemy.x < 1920) enemy.x = 1920; 
+            }
+        }
+    });
+
+    // Clean up dead enemies
+    enemies = enemies.filter(e => e.active);
 
     // Update enemy projectiles
     for (let ep of enemyProjectiles) {
@@ -364,7 +370,21 @@ let camera = { x: 0, y: 0 };
 // Particles (Spores)
 const particles = [];
 function initLevel() {
-    for (let i = 0; i < 60; i++) {
+    // Spawn Boss
+    enemies.push({
+        x: 704, y: 240, width: 80, height: 100, health: 4,
+        lastAttackTime: 0, isHit: false, hitTimer: 0, active: true, type: 'spellcaster'
+    });
+
+    // Spawn Zombies in Room 2 (Flat Room)
+    for (let i = 0; i < 5; i++) {
+        enemies.push({
+            x: 2300 + i * 300, y: 640 - 80, width: 64, height: 80, health: 1,
+            vx: 0, isHit: false, hitTimer: 0, active: true, type: 'zombie'
+        });
+    }
+
+    for (let i = 0; i < 100; i++) {
         particles.push({
             x: Math.random() * (mapCols * TILE_SIZE),
             y: Math.random() * (mapRows * TILE_SIZE),
@@ -457,29 +477,32 @@ function draw() {
     ctx.globalAlpha = 1.0;
     ctx.restore();
 
-    // 3b. Draw Enemy
-    if (enemy.active) {
+    // 3b. Draw Enemies
+    enemies.forEach(e => {
         ctx.save();
-        ctx.translate(enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+        ctx.translate(e.x + e.width/2, e.y + e.height/2);
         
-        // Face player
-        if (player.x + player.width/2 < enemy.x + enemy.width/2) {
-            ctx.scale(-1, 1);
+        let targetImg = assets.enemy;
+        if (e.type === 'zombie') {
+            targetImg = assets.zombie;
+            // Face player logic
+            if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
+        } else {
+            if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
         }
 
         ctx.globalCompositeOperation = 'screen';
         
-        if (enemy.isHit) {
-            ctx.filter = 'brightness(5) saturate(0)'; // Flash white
+        if (e.isHit) {
+            ctx.filter = 'brightness(5) saturate(0)';
         } else {
-            // Dark purple glow for enemy
             ctx.shadowBlur = 15;
-            ctx.shadowColor = '#ff00ff';
+            ctx.shadowColor = (e.type === 'spellcaster') ? '#ff00ff' : '#00ff66';
         }
         
-        ctx.drawImage(assets.enemy, -enemy.width/2, -enemy.height/2, enemy.width, enemy.height);
+        ctx.drawImage(targetImg, -e.width/2, -e.height/2, e.width, e.height);
         ctx.restore();
-    }
+    });
 
     // 3c. Draw Drops (with pulse)
     drops.forEach(d => {
@@ -557,11 +580,12 @@ function draw() {
     ctx.shadowBlur = 0;
 
     // Boss Health Bar (if active)
-    if (enemy.active) {
+    const boss = enemies.find(e => e.type === 'spellcaster');
+    if (boss) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(canvas.width/2 - 100, 30, 200, 15);
         ctx.fillStyle = '#ff00ff';
-        ctx.fillRect(canvas.width/2 - 100, 30, (enemy.health / 4) * 200, 15);
+        ctx.fillRect(canvas.width/2 - 100, 30, (boss.health / 4) * 200, 15);
         ctx.strokeStyle = '#fff';
         ctx.strokeRect(canvas.width/2 - 100, 30, 200, 15);
     }
