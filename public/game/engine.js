@@ -565,6 +565,31 @@ function draw() {
         }
     }
 
+    // 2b. Draw Decorative Paintings & Interactive Objects
+    // Bird Paintings in Boss Arena (Room 4)
+    for (let i = 0; i < 5; i++) {
+        ctx.drawImage(assets.bird, (105 + i * 4) * TILE_SIZE, 3 * TILE_SIZE, 128, 160);
+    }
+    // Locked Gate at the end
+    ctx.drawImage(assets.gate, 121 * TILE_SIZE, 11 * TILE_SIZE - 256, 192, 256);
+
+    interactiveObjects.forEach(obj => {
+        if (obj.type === 'crystal') {
+            ctx.save();
+            const pulse = 1 + Math.sin(Date.now() / 300) * 0.1;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = '#00ffff';
+            ctx.drawImage(assets.crystal, obj.x - (obj.width * (pulse-1))/2, obj.y - (obj.height * (pulse-1))/2, obj.width * pulse, obj.height * pulse);
+            ctx.restore();
+        } else if (obj.type === 'stone') {
+            ctx.save();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ff00ff';
+            ctx.drawImage(assets.stone, obj.x, obj.y, obj.width, obj.height);
+            ctx.restore();
+        }
+    });
+
     // 3. Draw Player 
     ctx.save();
     let px = player.x + player.width / 2;
@@ -655,31 +680,6 @@ function draw() {
         ctx.shadowColor = 'lightgreen';
         ctx.fill();
         ctx.shadowBlur = 0;
-    });
-
-    // 5. Draw Decorative Paintings & Interactive Objects
-    // Bird Paintings in Boss Arena (Room 4)
-    for (let i = 0; i < 5; i++) {
-        ctx.drawImage(assets.bird, (105 + i * 4) * TILE_SIZE, 3 * TILE_SIZE, 128, 160);
-    }
-    // Locked Gate at the end
-    ctx.drawImage(assets.gate, 121 * TILE_SIZE, 11 * TILE_SIZE - 256, 192, 256);
-
-    interactiveObjects.forEach(obj => {
-        if (obj.type === 'crystal') {
-            ctx.save();
-            const pulse = 1 + Math.sin(Date.now() / 300) * 0.1;
-            ctx.shadowBlur = 30;
-            ctx.shadowColor = '#00ffff';
-            ctx.drawImage(assets.crystal, obj.x - (obj.width * (pulse-1))/2, obj.y - (obj.height * (pulse-1))/2, obj.width * pulse, obj.height * pulse);
-            ctx.restore();
-        } else if (obj.type === 'stone') {
-            ctx.save();
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#ff00ff';
-            ctx.drawImage(assets.stone, obj.x, obj.y, obj.width, obj.height);
-            ctx.restore();
-        }
     });
 
     ctx.restore();
