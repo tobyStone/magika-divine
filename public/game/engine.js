@@ -312,7 +312,8 @@ function updateProjectiles() {
         ep.y += ep.vy;
 
         // Hit player detection
-        if (!player.invincible && checkCollision(player, ep)) {
+        const epRect = { x: ep.x - ep.size, y: ep.y - ep.size, width: ep.size * 2, height: ep.size * 2 };
+        if (!player.invincible && checkCollision(player, epRect)) {
             if (player.extraHealth > 0) {
                 player.extraHealth--;
             } else {
