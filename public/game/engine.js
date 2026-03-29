@@ -112,7 +112,9 @@ const player = {
     extraHealth: 0,
     hatCollected: false,
     readingLore: false,
-    loreText: ""
+    loreText: "",
+    teleporting: false,
+    teleportFade: 0
 };
 
 function saveGame() {
@@ -404,6 +406,27 @@ function updateProjectiles() {
 }
 
 function updatePhysics() {
+    // Teleportation Transition Logic
+    if (player.teleporting) {
+        player.teleportFade += 0.02; // Fade over 50 frames
+        player.vx = 0; player.vy = 0; // Freeze
+        if (player.teleportFade >= 1) {
+            // Destination: The Mountain Cave Entrance
+            player.x = 145 * TILE_SIZE;
+            player.y = 8 * TILE_SIZE - player.height;
+            player.teleporting = false;
+        }
+    } else if (player.teleportFade > 0) {
+        player.teleportFade -= 0.02; // Fade back in
+    }
+
+    // Unlocked Gate Teleport Trigger
+    const bossActive = enemies.some(e => e.type === 'bird_wizard');
+    const gateRect = { x: 121 * TILE_SIZE, y: 11 * TILE_SIZE - 256, width: 64, height: 256 };
+    if (!bossActive && !player.teleporting && checkCollision(player, gateRect)) {
+        player.teleporting = true;
+    }
+
     // Intro Cutscene Trigger Logic
     const galleryStartX = 100 * TILE_SIZE;
     if (player.x > galleryStartX && introStatus === 'READY') {
@@ -702,15 +725,27 @@ function draw() {
     const bgScaleY = canvas.height / assets.bg.height * 1.5; 
     const scale = Math.max(bgScaleX, bgScaleY);
 
+    if (player.x > 140 * TILE_SIZE) {
+        ctx.filter = 'hue-rotate(240deg) brightness(0.4) saturate(1.2)'; // Dark Snowy Night
+    }
     ctx.drawImage(assets.bg, bgOffsetX, bgOffsetY - 100, assets.bg.width * scale, assets.bg.height * scale);
+    ctx.filter = 'none';
 
-    // Apply Camera Translation
     ctx.translate(-camera.x, -camera.y);
+    
+    // Check if in Cave Region for Procedural Reskin
+    const isCave = player.x > 140 * TILE_SIZE;
 
     // 2. Draw Level Tiles (Optimized: Frustum Culling)
     const viewStartCol = Math.floor(camera.x / TILE_SIZE);
     const viewEndCol = Math.ceil((camera.x + canvas.width) / TILE_SIZE);
     
+    // Save style to apply filters for Cave region
+    if (isCave) {
+        ctx.save();
+        ctx.filter = 'grayscale(1) brightness(0.7) contrast(1.2)';
+    }
+
     for (let r = 0; r < mapRows; r++) {
         for (let c = Math.max(0, viewStartCol); c < Math.min(mapCols, viewEndCol); c++) {
             if (levelData[r][c] === 1) {
@@ -731,6 +766,8 @@ function draw() {
             }
         }
     }
+    
+    if (isCave) ctx.restore();
 
     // 2b. Draw Decorative Paintings & Interactive Objects
     // Bird Paintings in Boss Arena (Room 4)
@@ -909,15 +946,16 @@ function draw() {
         }
     });
 
-    // 4. Draw Particles (Spores)
-    ctx.fillStyle = 'rgba(200, 255, 200, 0.5)';
+    // 4. Draw Particles (Spores / Snow)
+    const isCaveRegion = player.x > 140 * TILE_SIZE;
+    ctx.fillStyle = isCaveRegion ? '#e0ffff' : 'rgba(200, 255, 200, 0.5)';
     particles.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
         
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = 'lightgreen';
+        ctx.shadowBlur = isCaveRegion ? 12 : 8;
+        ctx.shadowColor = isCaveRegion ? '#ffffff' : 'lightgreen';
         ctx.fill();
         ctx.shadowBlur = 0;
     });
@@ -1051,6 +1089,22 @@ function draw() {
         ctx.textAlign = 'center';
         ctx.fillText(`"${player.loreText}"`, canvas.width/2, canvas.height - 100);
         ctx.textAlign = 'left';
+    }
+
+    // Teleport Fade Overlay
+    if (player.teleportFade > 0) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for full screen overlay
+        ctx.globalAlpha = player.teleportFade;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        if (player.teleportFade > 0.8) {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'italic 24px serif';
+            ctx.fillText("Approaching the Peaks...", canvas.width/2 - 100, canvas.height/2);
+        }
+        ctx.restore();
     }
 }
 
