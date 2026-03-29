@@ -167,10 +167,6 @@ function updateProjectiles() {
                 p.active = false;
                 if (enemy.health <= 0) {
                     enemy.active = false;
-                    drops.push({
-                        x: enemy.x + enemy.width/2 - 25, y: enemy.y + enemy.height/2 - 25,
-                        width: 50, height: 50, type: 'heart', active: true
-                    });
                 }
             }
         }
@@ -491,13 +487,18 @@ function draw() {
             if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
         }
 
-        ctx.globalCompositeOperation = 'screen';
+        // Standard composite mode for vibrant sprites
+        ctx.globalCompositeOperation = 'source-over';
         
         if (e.isHit) {
             ctx.filter = 'brightness(5) saturate(0)';
         } else {
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 20;
             ctx.shadowColor = (e.type === 'spellcaster') ? '#ff00ff' : '#00ff66';
+            // Optional: add a slight white outline effect for even more clarity
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-e.width/2, -e.height/2, e.width, e.height);
         }
         
         ctx.drawImage(targetImg, -e.width/2, -e.height/2, e.width, e.height);
