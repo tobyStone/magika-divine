@@ -610,24 +610,25 @@ function initLevel() {
 
     // Spawn Save Crystal & Stone
     interactiveObjects.push({
-        x: 87 * TILE_SIZE, y: 10 * TILE_SIZE - 96, width: 80, height: 96,
+        x: 87 * TILE_SIZE, y: 9 * TILE_SIZE - 96, width: 80, height: 96,
         type: 'crystal', active: true
     });
+
     interactiveObjects.push({
-        x: 89 * TILE_SIZE, y: 10 * TILE_SIZE - 64, width: 64, height: 64,
+        x: 89 * TILE_SIZE, y: 9 * TILE_SIZE - 64, width: 64, height: 64,
         type: 'stone', active: true
     });
 
     if (!player.hatCollected) {
         interactiveObjects.push({
-            x: 90.5 * TILE_SIZE, y: 10 * TILE_SIZE - 40, width: 40, height: 40,
+            x: 90.5 * TILE_SIZE, y: 9 * TILE_SIZE - 40, width: 40, height: 40,
             type: 'wizard_hat', active: true
         });
     }
 
     // Spawn Lore Rock at Col 160
     interactiveObjects.push({
-        x: 160 * TILE_SIZE, y: 7 * TILE_SIZE - 64, width: 64, height: 64,
+        x: 160 * TILE_SIZE, y: 5 * TILE_SIZE - 64, width: 64, height: 64,
         type: 'lore_rock', active: true
     });
 
