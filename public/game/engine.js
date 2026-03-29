@@ -171,6 +171,14 @@ const levelData = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
+function initLevel() {
+    // Extra Vertical Barrier Walls for separation
+    for (let r = 0; r < mapRows; r++) {
+        levelData[r][124] = 1;
+        levelData[r][140] = 1;
+    }
+}
+
 // Physics / Collisions
 function checkCollision(rect1, rect2) {
     return (
@@ -658,6 +666,14 @@ function initLevel() {
         type: 'lore_rock', active: true
     });
 
+    // Spawn Fires (Flanking Gate & Peaks Entrance)
+    [{x:118.5, y:8}, {x:120.5, y:8}, {x:143, y:8}, {x:146, y:8}].forEach(pos => {
+        interactiveObjects.push({
+            x: pos.x * TILE_SIZE, y: pos.y * TILE_SIZE, width: 40, height: 60,
+            type: 'fire', active: true
+        });
+    });
+
     // Spawn Bird Wizard Boss
     enemies.push({
         x: 115 * TILE_SIZE, y: 5 * TILE_SIZE, width: 100, height: 120, health: 15, maxHealth: 15,
@@ -843,6 +859,31 @@ function draw() {
                  ctx.font = '14px monospace';
                  ctx.fillText("[Down Arrow] to read", obj.x, obj.y - 20);
             }
+        } else if (obj.type === 'fire') {
+            ctx.save();
+            const flicker = Math.random() * 10;
+            const time = Date.now() / 100;
+            
+            // Draw Glow
+            ctx.shadowBlur = 30 + flicker;
+            ctx.shadowColor = '#ff6600';
+            
+            // Draw Flames
+            ctx.fillStyle = '#ff3300';
+            ctx.beginPath();
+            ctx.moveTo(obj.x, obj.y + obj.height);
+            ctx.lineTo(obj.x + obj.width/2, obj.y + Math.sin(time) * 10);
+            ctx.lineTo(obj.x + obj.width, obj.y + obj.height);
+            ctx.fill();
+
+            ctx.fillStyle = '#ff9900';
+            ctx.beginPath();
+            ctx.moveTo(obj.x + 10, obj.y + obj.height);
+            ctx.lineTo(obj.x + obj.width/2, obj.y + 15 + Math.cos(time) * 5);
+            ctx.lineTo(obj.x + obj.width - 10, obj.y + obj.height);
+            ctx.fill();
+            
+            ctx.restore();
         }
     });
 
