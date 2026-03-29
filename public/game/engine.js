@@ -164,9 +164,9 @@ const levelData = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
     [0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1, 1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1, 1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1, 1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 // Physics / Collisions
@@ -440,10 +440,13 @@ function updatePhysics() {
 
     player.x += player.vx;
 
-    // Horizontal Collisions
+    // Horizontal Collisions (Optimized: Only check nearby tiles)
     let pRect = { x: player.x, y: player.y, width: player.width, height: player.height };
+    let startCol = Math.max(0, Math.floor(player.x / TILE_SIZE) - 2);
+    let endCol = Math.min(mapCols, Math.ceil((player.x + player.width) / TILE_SIZE) + 2);
+
     for (let r = 0; r < mapRows; r++) {
-        for (let c = 0; c < mapCols; c++) {
+        for (let c = startCol; c < endCol; c++) {
             if (levelData[r][c] === 1) {
                 let tileRect = { x: c * TILE_SIZE, y: r * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE };
                 if (checkCollision(pRect, tileRect)) {
@@ -471,10 +474,10 @@ function updatePhysics() {
     player.y += player.vy;
     player.isGrounded = false;
 
-    // Vertical Collisions
+    // Vertical Collisions (Optimized)
     pRect.y = player.y;
     for (let r = 0; r < mapRows; r++) {
-        for (let c = 0; c < mapCols; c++) {
+        for (let c = startCol; c < endCol; c++) {
             if (levelData[r][c] === 1) {
                 let tileRect = { x: c * TILE_SIZE, y: r * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE };
                 if (checkCollision(pRect, tileRect)) {
@@ -508,11 +511,11 @@ function updatePhysics() {
         player.checkpointY = 100;
     }
 
-    // Hazard Collision (Tile 2 = Acid)
+    // Hazard Collision (Tile 2 = Acid) (Optimized)
     pRect.y = player.y; // Refresh pRect
     pRect.x = player.x;
     for (let r = 0; r < mapRows; r++) {
-        for (let c = 0; c < mapCols; c++) {
+        for (let c = startCol; c < endCol; c++) {
             if (levelData[r][c] === 2) {
                 let tileRect = { x: c * TILE_SIZE, y: r * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE };
                 if (checkCollision(pRect, tileRect)) {
@@ -638,7 +641,7 @@ function initLevel() {
         lastAttackTime: 0, lastTeleportTime: 0, isHit: false, hitTimer: 0, active: true, type: 'bird_wizard'
     });
 
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 40; i++) {
         particles.push({
             x: Math.random() * (mapCols * TILE_SIZE),
             y: Math.random() * (mapRows * TILE_SIZE),
@@ -704,9 +707,12 @@ function draw() {
     // Apply Camera Translation
     ctx.translate(-camera.x, -camera.y);
 
-    // 2. Draw Level Tiles
+    // 2. Draw Level Tiles (Optimized: Frustum Culling)
+    const viewStartCol = Math.floor(camera.x / TILE_SIZE);
+    const viewEndCol = Math.ceil((camera.x + canvas.width) / TILE_SIZE);
+    
     for (let r = 0; r < mapRows; r++) {
-        for (let c = 0; c < mapCols; c++) {
+        for (let c = Math.max(0, viewStartCol); c < Math.min(mapCols, viewEndCol); c++) {
             if (levelData[r][c] === 1) {
                 ctx.drawImage(assets.tile, c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             } else if (levelData[r][c] === 2) {
@@ -996,6 +1002,12 @@ function draw() {
         ctx.shadowBlur = 0;
     }
 
+    // FPS Counter
+    ctx.fillStyle = '#00ff00';
+    ctx.font = 'bold 16px monospace';
+    const fps = Math.round(1000 / lastFrameDelta);
+    ctx.fillText(`FPS: ${fps}`, canvas.width - 80, 30);
+
     // Debug Text
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '16px monospace';
@@ -1042,7 +1054,13 @@ function draw() {
     }
 }
 
+let lastFrameTime = Date.now();
+let lastFrameDelta = 16;
 function gameLoop() {
+    const now = Date.now();
+    lastFrameDelta = now - lastFrameTime;
+    lastFrameTime = now;
+
     updatePhysics();
     updateParticles();
     updateProjectiles();
