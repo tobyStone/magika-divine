@@ -163,7 +163,8 @@ const levelData = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,0,0,0,0,0,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,1,1,1,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0, 1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,0, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
     [0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -245,6 +246,15 @@ function updateProjectiles() {
                         enemy.isDying = true;
                         enemy.deathTimer = 120; // 2 seconds of shaking
                         enemyProjectiles.length = 0; // Clear all attacks immediately
+                    } else if (enemy.type === 'zombie_sword') {
+                        // Spawn flying sword on death in random direction
+                        const angle = Math.random() * Math.PI * 2;
+                        enemyProjectiles.push({
+                            x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2,
+                            vx: Math.cos(angle) * 8, vy: Math.sin(angle) * 8,
+                            size: 20, active: true, type: 'flying_sword', rotation: 0
+                        });
+                        enemy.active = false;
                     } else {
                         enemy.active = false;
                         if (enemy.type === 'spellcaster') enemyProjectiles.length = 0; // Clear Keeper attacks
@@ -674,6 +684,26 @@ function initLevel() {
         });
     });
 
+    // Spawn Huge Green Torch at Col 175
+    interactiveObjects.push({
+        x: 175 * TILE_SIZE, y: 3 * TILE_SIZE, width: 80, height: 300,
+        type: 'huge_torch', active: true
+    });
+
+    // Spawn Hearty in Room 5
+    drops.push({
+        x: 177 * TILE_SIZE, y: 2 * TILE_SIZE - 40, width: 40, height: 40,
+        type: 'heart_on_podium', active: true
+    });
+
+    // Spawn 3 Sword Zombies in Room 5
+    for (let i = 0; i < 3; i++) {
+        enemies.push({
+            x: (168 + i * 4) * TILE_SIZE, y: 8 * TILE_SIZE, width: 70, height: 90,
+            health: 2, vx: 0, active: true, type: 'zombie_sword'
+        });
+    }
+
     // Spawn Bird Wizard Boss
     enemies.push({
         x: 115 * TILE_SIZE, y: 5 * TILE_SIZE, width: 100, height: 120, health: 15, maxHealth: 15,
@@ -859,6 +889,35 @@ function draw() {
                  ctx.font = '14px monospace';
                  ctx.fillText("[Down Arrow] to read", obj.x, obj.y - 20);
             }
+        } else if (obj.type === 'huge_torch') {
+            ctx.save();
+            const flicker = Math.random() * 15;
+            const time = Date.now() / 150;
+            
+            // Draw Pillar
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(obj.x, obj.y + 60, obj.width, obj.height - 60);
+            
+            // Draw Glow (GREEN)
+            ctx.shadowBlur = 40 + flicker;
+            ctx.shadowColor = '#00ff66';
+            
+            // Draw Flames (GREEN)
+            ctx.fillStyle = '#00cc44';
+            ctx.beginPath();
+            ctx.moveTo(obj.x - 20, obj.y + 60);
+            ctx.lineTo(obj.x + obj.width/2, obj.y + Math.sin(time) * 30);
+            ctx.lineTo(obj.x + obj.width + 20, obj.y + 60);
+            ctx.fill();
+
+            ctx.fillStyle = '#55ff99';
+            ctx.beginPath();
+            ctx.moveTo(obj.x, obj.y + 60);
+            ctx.lineTo(obj.x + obj.width/2, obj.y + 20 + Math.cos(time) * 15);
+            ctx.lineTo(obj.x + obj.width, obj.y + 60);
+            ctx.fill();
+            
+            ctx.restore();
         } else if (obj.type === 'fire') {
             ctx.save();
             const flicker = Math.random() * 10;
@@ -920,10 +979,18 @@ function draw() {
         ctx.translate(e.x + e.width/2, e.y + e.height/2);
         
         let targetImg = assets.enemy;
-        if (e.type === 'zombie') {
+        if (e.type === 'zombie' || e.type === 'zombie_sword') {
             targetImg = assets.zombie;
             // Face player logic
             if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
+            
+            if (e.type === 'zombie_sword') {
+                // Draw sword in hand
+                ctx.fillStyle = '#C0C0C0'; // Silver
+                ctx.fillRect(20, 0, 10, -50); // Blade
+                ctx.fillStyle = '#8B4513'; // Hilt
+                ctx.fillRect(15, 0, 20, 10);
+            }
         } else if (e.type === 'bird_wizard') {
             targetImg = assets.bird; // Use bird painting sprite as placeholder
             if (player.x + player.width/2 < e.x + e.width/2) ctx.scale(-1, 1);
@@ -1014,15 +1081,30 @@ function draw() {
         ctx.fill();
     });
 
-    // Draw magic projectiles (Enemy - Red/Purple)
+    // Draw magic projectiles (Enemy - Red/Purple/Sword)
     enemyProjectiles.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
-        ctx.fill();
-        ctx.shadowBlur = 25;
-        ctx.shadowColor = p.color || '#ff0033'; 
-        ctx.fill();
+        if (p.type === 'flying_sword') {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            p.rotation += 0.3;
+            ctx.rotate(p.rotation);
+            // Draw Iron Sword
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillRect(-5, -25, 10, 50); // Blade
+            ctx.fillStyle = '#333';
+            ctx.fillRect(-15, 15, 30, 8); // Guard
+            ctx.restore();
+        } else {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = p.color || '#ff0033'; 
+            ctx.fill();
+        }
     });
     ctx.restore(); // Matching the Projectile save() at 759
     ctx.restore(); // Matching the Camera save() at 571
