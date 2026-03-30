@@ -707,6 +707,14 @@ function initLevel() {
         levelData[r][140] = 1; // Mountain Peaks entrance
     }
 
+    // Add Easy Parkour Platforms for the Peaks Heart (2-tile vertical intervals)
+    for (let c = 170; c <= 172; c++) levelData[9][c] = 1;
+    for (let c = 173; c <= 175; c++) levelData[7][c] = 1;
+    for (let c = 170; c <= 172; c++) levelData[5][c] = 1;
+    for (let c = 175; c <= 177; c++) levelData[3][c] = 1;
+    for (let c = 177; c <= 179; c++) levelData[1][c] = 1;
+
+
     // Spawn Boss
     enemies.push({
         x: 704, y: 240, width: 80, height: 100, health: 4, maxHealth: 4,
@@ -765,9 +773,9 @@ function initLevel() {
         type: 'huge_torch', active: true
     });
 
-    // Spawn Hearty in Room 5
+    // Spawn Hearty in Room 5 (Now on Row 1 platform for parkour)
     drops.push({
-        x: 177 * TILE_SIZE, y: 2 * TILE_SIZE - 40, width: 40, height: 40,
+        x: 177 * TILE_SIZE, y: 1 * TILE_SIZE - 40, width: 40, height: 40,
         type: 'heart_on_podium', active: true
     });
 
