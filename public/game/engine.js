@@ -392,6 +392,13 @@ function updateProjectiles() {
                                 enemy.x = tileRect.x - enemy.width;
                             } else if (enemy.vx < 0) {
                                 enemy.x = tileRect.x + tileRect.width;
+                            } else {
+                                // Robust fallback for vx === 0: push away from tile center
+                                if (enemy.x + enemy.width / 2 < tileRect.x + TILE_SIZE / 2) {
+                                    enemy.x = tileRect.x - enemy.width;
+                                } else {
+                                    enemy.x = tileRect.x + TILE_SIZE;
+                                }
                             }
                             enemy.vx = 0;
                             eRect.x = enemy.x;
@@ -767,7 +774,9 @@ function initLevel() {
     // Spawn 3 Sword Zombies in Room 5
     for (let i = 0; i < 3; i++) {
         enemies.push({
-            x: (168 + i * 4) * TILE_SIZE, y: 8 * TILE_SIZE, width: 70, height: 90,
+            // X: Moved from (168, 172, 176) to safe columns (151, 154, 157).
+            // Y: Adjusted from 8*TILE_SIZE to 10*TILE_SIZE - height to correctly sit on Row 10 floor.
+            x: (151 + i * 3) * TILE_SIZE, y: 10 * TILE_SIZE - 90, width: 70, height: 90,
             health: 2, vx: 0, active: true, type: 'zombie_sword'
         });
     }
