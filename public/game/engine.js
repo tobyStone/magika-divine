@@ -154,7 +154,7 @@ const drops = [];
 
 // Level Map (1 = solid tile, 2 = acid, 3 = ladder/platform)
 const mapCols = 180; // Expanded for Mountain Cave
-const mapRows = 12; // 12 * 64 = 768 map height
+const mapRows = 18; // Expanded for Underground Room (18 * 64 = 1152 height)
 
 const levelData = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -172,6 +172,12 @@ const levelData = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+
+// Add 6 hidden subterranean rows to levelData
+for (let i = 0; i < 6; i++) {
+    levelData.push(new Array(mapCols).fill(0));
+}
+
 
 // Vertical Barrier Wall setup was moved and consolidated into the main initLevel function below.
 
@@ -673,9 +679,18 @@ function updatePhysics() {
                 } else {
                     player.readingLore = false;
                 }
+            } else if (obj.type === 'secret_chest') {
+                 player.health = player.maxHealth;
+                 player.extraHealth = 5;
+                 player.saveText = "DIVINE PROTECTION ACTIVATED!";
+                 player.saveTextTimer = 150;
+                 obj.active = false; // "Collect" chest
+                 saveGame();
             }
         }
     }
+    // Clean up collected/inactive interactive objects
+    interactiveObjects = interactiveObjects.filter(o => o.active);
 
     // Save Text animation
     if (player.saveTextTimer > 0) {
@@ -704,15 +719,49 @@ function initLevel() {
     for (let r = 0; r < mapRows; r++) {
         levelData[r][100] = 1; // Left wall (Boss Arena entrance)
         levelData[r][124] = 1; // Right wall (Boss Arena exit)
-        levelData[r][140] = 1; // Mountain Peaks entrance
     }
+    
+    // Block off the Mountains entrance Column 140 (Rows 0-11)
+    for (let r = 0; r <= 11; r++) levelData[r][140] = 1;
+
+    // --- SECRET UNDERNEATH ROAD (Cols 130-150) ---
+    // 1. Create Pit Entrance at Col 130
+    levelData[11][130] = 0; 
+
+    // 2. Build the Underground Room (Rows 12-17)
+    // Wall to separate the pit from the main underground cavern
+    for (let r = 12; r <= 17; r++) levelData[r][129] = 1;
+    
+    // Acid Floor (flowing through the challenge room)
+    for (let c = 130; c <= 150; c++) levelData[17][c] = 2;
+    
+    // Parkour Platforms (3-tile chunks at Row 15)
+    for (let c = 132; c <= 134; c++) levelData[15][c] = 1;
+    for (let c = 137; c <= 139; c++) levelData[15][c] = 1;
+    for (let c = 142; c <= 144; c++) levelData[15][c] = 1;
+
+    // Platform at the end for the chest
+    for (let c = 146; c <= 148; c++) levelData[15][c] = 1;
+    
+    // Exit path back to main world (Column 145)
+    levelData[11][151] = 0; // Exit hole
+    for (let r = 12; r <= 17; r++) levelData[r][151] = 3; // Ladder/Platforms to climb out
+
+    // Outer walls of the secret room
+    for (let r = 11; r <= 17; r++) levelData[r][152] = 1;
+
+    // 3. Spawn Secret Chest
+    interactiveObjects.push({
+        x: 148 * TILE_SIZE, y: 15 * TILE_SIZE - 64, width: 64, height: 60,
+        type: 'secret_chest', active: true
+    });
 
     // Add Reliable Parkour Platforms for the Peaks Heart (4-tile vertical intervals for head clearance)
     for (let c = 167; c <= 169; c++) levelData[7][c] = 1;
     for (let c = 171; c <= 173; c++) levelData[3][c] = 1;
     for (let c = 175; c <= 177; c++) levelData[1][c] = 1;
 
-
+    // --- OTHER SPAWNS ---
     // Spawn Boss
     enemies.push({
         x: 704, y: 240, width: 80, height: 100, health: 4, maxHealth: 4,
@@ -999,6 +1048,31 @@ function draw() {
             ctx.lineTo(obj.x + obj.width/2, obj.y + 20 + Math.cos(time) * 15);
             ctx.lineTo(obj.x + obj.width, obj.y + 60);
             ctx.fill();
+            
+            ctx.restore();
+        } else if (obj.type === 'secret_chest') {
+            ctx.save();
+            // Golden Chest Drawing
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ffd700'; // Gold glow
+            
+            // Chest Body
+            ctx.fillStyle = '#8B4513'; // Saddle Brown
+            ctx.fillRect(obj.x, obj.y + 20, obj.width, obj.height - 20);
+            
+            // Chest Lid (Arched)
+            ctx.fillStyle = '#A0522D'; // Sienna
+            ctx.beginPath();
+            ctx.ellipse(obj.x + obj.width/2, obj.y + 20, obj.width/2, 20, 0, Math.PI, 0);
+            ctx.fill();
+            
+            // Gold Bands
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(obj.x + 10, obj.y + 10, 5, obj.height - 10);
+            ctx.fillRect(obj.x + obj.width - 15, obj.y + 10, 5, obj.height - 10);
+            
+            // Lock
+            ctx.fillRect(obj.x + obj.width/2 - 5, obj.y + 25, 10, 10);
             
             ctx.restore();
         } else if (obj.type === 'fire') {
