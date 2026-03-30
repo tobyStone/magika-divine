@@ -173,13 +173,7 @@ const levelData = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
-function initLevel() {
-    // Extra Vertical Barrier Walls (Castle to Peaks separation)
-    for (let r = 0; r < mapRows; r++) {
-        levelData[r][124] = 1;
-        levelData[r][140] = 1;
-    }
-}
+// Vertical Barrier Wall setup was moved and consolidated into the main initLevel function below.
 
 // Physics / Collisions
 function checkCollision(rect1, rect2) {
@@ -699,6 +693,13 @@ const interactiveObjects = [];
 // Particles (Spores)
 const particles = [];
 function initLevel() {
+    // Ensure all vertical barrier walls are solid to prevent projectile leakage
+    for (let r = 0; r < mapRows; r++) {
+        levelData[r][100] = 1; // Left wall (Boss Arena entrance)
+        levelData[r][124] = 1; // Right wall (Boss Arena exit)
+        levelData[r][140] = 1; // Mountain Peaks entrance
+    }
+
     // Spawn Boss
     enemies.push({
         x: 704, y: 240, width: 80, height: 100, health: 4, maxHealth: 4,
