@@ -707,12 +707,10 @@ function initLevel() {
         levelData[r][140] = 1; // Mountain Peaks entrance
     }
 
-    // Add Easy Parkour Platforms for the Peaks Heart (2-tile vertical intervals)
-    for (let c = 170; c <= 172; c++) levelData[9][c] = 1;
-    for (let c = 173; c <= 175; c++) levelData[7][c] = 1;
-    for (let c = 170; c <= 172; c++) levelData[5][c] = 1;
-    for (let c = 175; c <= 177; c++) levelData[3][c] = 1;
-    for (let c = 177; c <= 179; c++) levelData[1][c] = 1;
+    // Add Reliable Parkour Platforms for the Peaks Heart (4-tile vertical intervals for head clearance)
+    for (let c = 167; c <= 169; c++) levelData[7][c] = 1;
+    for (let c = 171; c <= 173; c++) levelData[3][c] = 1;
+    for (let c = 175; c <= 177; c++) levelData[1][c] = 1;
 
 
     // Spawn Boss
